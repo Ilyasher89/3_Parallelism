@@ -24,6 +24,8 @@ def matrix_generator(queue, size, stop_event):
     """
     Генерирует пары случайных матриц и отправляет их в очередь для перемножения.
     """
+    # Игнорируем сигнал SIGINT в дочернем процессе
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     print("Запуск процесса генерации матриц.")
     try:
         while not stop_event.is_set():
@@ -35,8 +37,8 @@ def matrix_generator(queue, size, stop_event):
             print("Сгенерированы две матрицы и отправлены в очередь.")
             # Имитация задержки между генерациями
             time.sleep(1)
-    except KeyboardInterrupt:
-        print("Процесс генерации матриц прерван.")
+    except Exception as e:
+        print(f"Процесс генерации матриц прерван: {e}")
     finally:
         # После остановки генерации отправляем специальный сигнал (None) для завершения работы умножителя
         queue.put(None)
@@ -47,6 +49,8 @@ def matrix_multiplier(queue, stop_event):
     """
     Получает пары матриц из очереди, перемножает их и записывает результат в файл.
     """
+    # Игнорируем сигнал SIGINT в дочернем процессе
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
     print("Запуск процесса перемножения матриц.")
     try:
         # Открываем файл для записи результатов
@@ -74,8 +78,8 @@ def matrix_multiplier(queue, stop_event):
                 # Записываем результат в файл
                 write_matrix_to_file(result_matrix, result_file)
                 print("Матрицы перемножены и результат записан в файл.")
-    except KeyboardInterrupt:
-        print("Процесс перемножения матриц прерван.")
+    except Exception as e:
+        print(f"Процесс перемножения матриц прерван: {e}")
     finally:
         print("Остановка процесса перемножения матриц.")
 
@@ -134,7 +138,6 @@ def user_input_thread(stop_event):
 def signal_handler(sig, frame):
     print("\nПолучен сигнал прерывания. Программа завершается.")
     # Устанавливаем событие остановки
-    global stop_event
     stop_event.set()
 
 # Главная функция программы
